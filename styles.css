@@ -152,6 +152,13 @@ body {
   background: var(--accent-hover);
 }
 
+.my-btn.primary.selected {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.28);
+}
+
 .my-btn.secondary {
   background: #343434;
   color: #e0e0e0;
