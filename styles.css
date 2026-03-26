@@ -196,28 +196,3 @@ body {
 .site-footer p {
   margin: 0;
 }
-
-@media (max-width: 740px) {
-  .site-header {
-    height: auto;
-    padding: 12px 14px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .top-links {
-    width: 100%;
-  }
-
-  .link-btn {
-    flex: 1;
-    text-align: center;
-  }
-
-  .site-footer {
-    padding: 12px 14px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
