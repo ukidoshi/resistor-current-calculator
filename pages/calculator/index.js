@@ -15,7 +15,6 @@ export class CalculatorPage {
       <div class="container py-4 calc-layout">
         <div class="calc-head mb-4">
           <h1 class="mb-2">Калькулятор тока</h1>
-          <p class="mb-0">Добавляй только резисторы из каталога API.</p>
         </div>
         <div id="calculator-page"></div>
       </div>
