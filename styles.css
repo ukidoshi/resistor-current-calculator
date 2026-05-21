@@ -140,6 +140,27 @@ body {
   color: #d0d0d0;
 }
 
+.resistor-preview {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+  border-bottom: 1px solid #2f2f2f;
+  color: var(--accent);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.three-viewer {
+  width: 100%;
+  min-height: 320px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+}
+
 .calc-grid {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;

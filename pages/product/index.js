@@ -1,6 +1,9 @@
 import { BackButtonComponent } from "../../components/back-button/index.js";
-import { RequestCardComponent } from "../../components/request-card/index.js";
+import { HomeButtonComponent } from "../../components/home-button/index.js";
 import { MainPage } from "../main/index.js";
+import { EditResistorPage } from "../edit/index.js";
+import { ajax } from "../../modules/ajax.js";
+import { resistorUrls } from "../../modules/resistorUrls.js";
 
 export class ProductPage {
   constructor(parent, id) {
@@ -8,43 +11,12 @@ export class ProductPage {
     this.id = Number(id);
   }
 
-  getData() {
-    const list = [
-      {
-        id: 1,
-        model: "Yageo CFR-25JR-52-220R",
-        connection: "последовательно",
-        requestResistors: [220, 330, 470]
-      },
-      {
-        id: 2,
-        model: "Vishay MRS25 10K",
-        connection: "параллельно",
-        requestResistors: [10000, 10000, 4700]
-      },
-      {
-        id: 3,
-        model: "KOA Speer MF1/4DCT52R1000F",
-        connection: "последовательно",
-        requestResistors: [1000, 2200, 3300]
-      },
-      {
-        id: 4,
-        model: "Bourns CR0805-FX-1K0ELF",
-        connection: "параллельно",
-        requestResistors: [1000, 1000, 1000]
-      }
-    ];
-
-    return list.find((item) => item.id === this.id);
-  }
-
   getHTML() {
     return `
       <div class="container py-4 calc-layout">
         <div class="calc-head mb-4">
-          <h1 class="mb-2">Заявка по электротехнике</h1>
-          <p class="mb-0">Расчет силы тока для списка резисторов.</p>
+          <h1 class="mb-2">Карточка резистора</h1>
+          <p class="mb-0">Подробная информация о модели.</p>
         </div>
         <div id="product-page"></div>
       </div>
@@ -60,15 +32,71 @@ export class ProductPage {
     mainPage.render();
   }
 
+  clickDelete() {
+    const self = this;
+    ajax.delete(resistorUrls.deleteResistorById(this.id), function (data, status) {
+      if (status === 204 || status === 200) {
+        const mainPage = new MainPage(self.parent);
+        mainPage.render();
+      } else {
+        alert("Не удалось удалить");
+      }
+    });
+  }
+
+  clickEdit() {
+    const editPage = new EditResistorPage(this.parent, this.id);
+    editPage.render();
+  }
+
+  renderInfo(data) {
+    const infoHtml = `
+      <div class="card shadow-sm request-card mb-3">
+        <div class="card-body">
+          <div class="resistor-preview mb-3">${data.resistance} Ом</div>
+          <p class="mb-1"><b>Модель:</b> ${data.model}</p>
+          <p class="mb-1"><b>R:</b> ${data.resistance} Ом</p>
+          <p class="mb-1"><b>P:</b> ${data.power}</p>
+          <p class="mb-2"><b>Допуск:</b> ${data.tolerance}</p>
+          <p class="mb-3">${data.text}</p>
+          <button id="edit-resistor-btn" type="button" class="btn btn-warning me-2">Редактировать</button>
+          <button id="delete-resistor-btn" type="button" class="btn btn-outline-danger">Удалить</button>
+        </div>
+      </div>
+    `;
+
+    this.pageRoot.insertAdjacentHTML("beforeend", infoHtml);
+
+    const self = this;
+    document.getElementById("edit-resistor-btn").addEventListener("click", function () {
+      self.clickEdit();
+    });
+    document.getElementById("delete-resistor-btn").addEventListener("click", function () {
+      self.clickDelete();
+    });
+  }
+
+  getData() {
+    const self = this;
+    ajax.get(resistorUrls.getResistorById(this.id), function (data, status) {
+      if (status === 200) {
+        self.renderInfo(data);
+      } else {
+        self.pageRoot.innerHTML = "<p>Резистор не найден</p>";
+      }
+    });
+  }
+
   render() {
     this.parent.innerHTML = "";
     this.parent.insertAdjacentHTML("beforeend", this.getHTML());
 
+    const homeButton = new HomeButtonComponent(this.pageRoot, this.parent);
+    homeButton.render();
+
     const backButton = new BackButtonComponent(this.pageRoot);
     backButton.render(this.clickBack.bind(this));
 
-    const data = this.getData();
-    const requestCard = new RequestCardComponent(this.pageRoot);
-    requestCard.render(data);
+    this.getData();
   }
 }

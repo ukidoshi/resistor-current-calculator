@@ -1,42 +1,14 @@
 import { ResistorCardComponent } from "../../components/resistor-card/index.js";
 import { ProductPage } from "../product/index.js";
+import { EditResistorPage } from "../edit/index.js";
+import { CalculatorPage } from "../calculator/index.js";
+import { HomeButtonComponent } from "../../components/home-button/index.js";
+import { ajax } from "../../modules/ajax.js";
+import { resistorUrls } from "../../modules/resistorUrls.js";
 
 export class MainPage {
   constructor(parent) {
     this.parent = parent;
-  }
-
-  getData() {
-    return [
-      {
-        id: 1,
-        model: "Yageo CFR-25JR-52-220R",
-        resistance: 220,
-        power: "0.25W",
-        tolerance: "5%"
-      },
-      {
-        id: 2,
-        model: "Vishay MRS25 10K",
-        resistance: 10000,
-        power: "0.6W",
-        tolerance: "1%"
-      },
-      {
-        id: 3,
-        model: "KOA Speer MF1/4DCT52R1000F",
-        resistance: 1000,
-        power: "0.25W",
-        tolerance: "1%"
-      },
-      {
-        id: 4,
-        model: "Bourns CR0805-FX-1K0ELF",
-        resistance: 1000,
-        power: "0.125W",
-        tolerance: "1%"
-      }
-    ];
   }
 
   getHTML() {
@@ -44,11 +16,19 @@ export class MainPage {
       <div class="container py-4 calc-layout">
         <div class="calc-head mb-4">
           <h1 class="mb-2">Расчет по закону Ома</h1>
-          <p class="mb-0">Услуги: реальные модели резисторов для учебных задач.</p>
+          <p class="mb-0">Каталог моделей резисторов (данные с API).</p>
         </div>
-        <div class="calc-note mb-4">
-          Нажми на модель, дальше откроется простая форма заявки для расчета силы тока.
+
+        <div class="calc-note mb-3 d-flex flex-wrap gap-2 align-items-end">
+          <div class="flex-grow-1">
+            <label class="form-label mb-1">Фильтр по модели</label>
+            <input id="filter-model" class="form-control calc-input" placeholder="Например: Yageo">
+          </div>
+          <button id="filter-btn" type="button" class="btn btn-warning">Найти</button>
+          <button id="open-calc-btn" type="button" class="btn btn-outline-light">Калькулятор</button>
+          <button id="add-resistor-btn" type="button" class="btn btn-outline-light">Добавить</button>
         </div>
+
         <div id="main-page" class="row row-cols-1 row-cols-md-2 g-3"></div>
       </div>
     `;
@@ -58,20 +38,70 @@ export class MainPage {
     return document.getElementById("main-page");
   }
 
-  clickCard(e) {
-    const cardId = e.target.dataset.id;
+  clickDetail(e) {
+    const cardId = e.currentTarget.dataset.id;
     const productPage = new ProductPage(this.parent, cardId);
     productPage.render();
+  }
+
+  renderData(items) {
+    this.pageRoot.innerHTML = "";
+
+    if (!items || items.length === 0) {
+      this.pageRoot.innerHTML = '<p class="text-muted">Ничего не найдено</p>';
+      return;
+    }
+
+    const self = this;
+    items.forEach(function (item) {
+      const card = new ResistorCardComponent(self.pageRoot);
+      card.render(item, self.clickDetail.bind(self));
+    });
+  }
+
+  getData() {
+    const modelInput = document.getElementById("filter-model");
+    const model = modelInput ? modelInput.value.trim() : "";
+
+    let url = resistorUrls.getResistors();
+    if (model) {
+      url = url + "?model=" + encodeURIComponent(model);
+    }
+
+    const self = this;
+    ajax.get(url, function (data, status) {
+      if (status === 200 && Array.isArray(data)) {
+        self.renderData(data);
+      } else {
+        self.pageRoot.innerHTML = "<p>Ошибка загрузки данных</p>";
+      }
+    });
   }
 
   render() {
     this.parent.innerHTML = "";
     this.parent.insertAdjacentHTML("beforeend", this.getHTML());
 
-    const data = this.getData();
-    data.forEach((item) => {
-      const resistorCard = new ResistorCardComponent(this.pageRoot);
-      resistorCard.render(item, this.clickCard.bind(this));
+    const layout = document.querySelector(".calc-layout");
+    const homeButton = new HomeButtonComponent(layout, this.parent);
+    homeButton.render();
+
+    const self = this;
+
+    document.getElementById("filter-btn").addEventListener("click", function () {
+      self.getData();
     });
+
+    document.getElementById("add-resistor-btn").addEventListener("click", function () {
+      const editPage = new EditResistorPage(self.parent, null);
+      editPage.render();
+    });
+
+    document.getElementById("open-calc-btn").addEventListener("click", function () {
+      const calcPage = new CalculatorPage(self.parent);
+      calcPage.render();
+    });
+
+    this.getData();
   }
 }
