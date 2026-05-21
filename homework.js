@@ -40,29 +40,40 @@ export function countModelPrefixes(words, modelStr) {
 }
 
 // Задача 3.5: группировка слов-анаграмм
+function getSortedLetters(word) {
+  const letters = word.toLowerCase().split("");
+  letters.sort();
+  return letters.join("");
+}
+
 export function groupAnagrams(codes) {
   const groups = {};
+  
+  for (let i = 0; i < codes.length; i++) {
+    const word = codes[i];
+    const key = getSortedLetters(word);
 
-  codes.forEach(function (code) {
-    const key = code.toLowerCase().split("").sort().join("");
     if (!groups[key]) {
       groups[key] = [];
     }
-    groups[key].push(code);
-  });
+    groups[key].push(word);
+  }
 
   const result = [];
-  Object.keys(groups).forEach(function (key) {
-    if (groups[key].length >= 2) {
-      groups[key].sort();
-      result.push(groups[key]);
+  const keys = Object.keys(groups);
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const group = groups[key];
+
+    if (group.length >= 2) {
+      group.sort();
+      result.push(group);
     }
-  });
+  }
 
   result.sort(function (a, b) {
-    if (a[0] < b[0]) return -1;
-    if (a[0] > b[0]) return 1;
-    return 0;
+    return a[0].localeCompare(b[0]);
   });
 
   return result;
