@@ -1,54 +1,76 @@
-# Лабораторная работа 5 (фронтенд)
+# Лабораторная работа 6 (фронтенд)
 
 Тема: электротехника. Услуги — модели резисторов. Заявки — расчет тока.
 
 ## Что сделано
 
-- Подключение к API бэкенда через **XMLHttpRequest** (`modules/ajax.js`)
-- URL API в `modules/resistorUrls.js`
-- Главная: список резисторов с API + фильтр по `model` (query-параметр)
-- Страница заявки: данные по `id` + кнопка **Удалить** (DELETE)
-- Страница добавления/редактирования: поля для ввода, без кнопки «Сохранить» (как в методичке для ЛР5)
-- Кнопка **Домой** в шапке и на страницах
+- Запросы через **fetch** и **async/await** (`modules/fetch.js`)
+- Относительные URL API (`/resistors`) — один домен с бэкендом после сборки
+- Кнопка **Сохранить** на странице добавления/редактирования (POST / PATCH)
+- Сборка фронта через **Vite** (`npm run build` → папка `public/`)
 
-## Запуск (два сервера)
+## Разработка (два процесса)
 
-**1. Бэкенд (лабораторная 4):**
+**1. Бэкенд:**
 
 ```bash
 cd /Users/nacynsaryglar/PSP/backend
 npm run dev
 ```
 
-Адрес: `http://localhost:3000`
-
-**2. Фронтенд (эта папка):**
+**2. Фронт (Vite):**
 
 ```bash
 cd /Users/nacynsaryglar/PSP/lab1
-python3 -m http.server 5500
+npm install
+npm run dev
 ```
 
-Адрес: `http://localhost:5500`
+Адрес: `http://localhost:5173` (прокси `/resistors` → `localhost:3000`)
 
-## CORS
+## Продакшен (защита ЛР6)
 
-Для защиты включи расширение **CORS Unblock** в Chrome (как в методичке).
-Сначала покажи ошибку в Network, потом включи расширение и повтори фильтрацию.
+**1. Собрать фронт:**
+
+```bash
+cd /Users/nacynsaryglar/PSP/lab1
+npm run build
+```
+
+**2. Скопировать сборку в бэкенд (ветка lab_4):**
+
+```bash
+rm -rf /Users/nacynsaryglar/PSP/backend/public
+cp -r /Users/nacynsaryglar/PSP/lab1/public /Users/nacynsaryglar/PSP/backend/public
+```
+
+**3. Запустить только бэкенд:**
+
+```bash
+cd /Users/nacynsaryglar/PSP/backend
+npm run dev
+```
+
+Открыть `http://localhost:3000` — CORS не нужен, в Network тип **fetch**.
+
+## Ветки git
+
+- **lab_6** — исходники, без папки `public/` (в `.gitignore`)
+- **lab_4** (backend) — папка `public/` со сборкой
 
 ## Структура
 
 ```bash
 lab1/
-├── modules/          # ajax + urls
+├── modules/          # fetch.js + resistorUrls.js
 ├── pages/
-│   ├── main/
-│   ├── product/
-│   └── edit/
 ├── components/
-├── index.html
-└── main.js
+├── static/           # about.html для Vite
+├── vite.config.js
+├── package.json
+└── index.html
 
-backend/              # отдельная папка, не в этой ветке
-└── src/...
+backend/
+├── public/           # bundle после сборки (ветка lab_4)
+└── src/
 ```

@@ -1,6 +1,6 @@
 class ResistorUrls {
   constructor() {
-    this.baseUrl = "http://localhost:3000";
+    this.baseUrl = "";
   }
 
   getResistors() {

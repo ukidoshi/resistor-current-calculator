@@ -2,7 +2,7 @@ import { CatalogCalculatorComponent } from "../../components/catalog-calculator/
 import { BackButtonComponent } from "../../components/back-button/index.js";
 import { HomeButtonComponent } from "../../components/home-button/index.js";
 import { MainPage } from "../main/index.js";
-import { ajax } from "../../modules/ajax.js";
+import { get } from "../../modules/fetch.js";
 import { resistorUrls } from "../../modules/resistorUrls.js";
 
 export class CalculatorPage {
@@ -38,14 +38,21 @@ export class CalculatorPage {
       mainPage.render();
     }.bind(this));
 
-    const self = this;
-    ajax.get(resistorUrls.getResistors(), function (data, status) {
-      if (status === 200 && Array.isArray(data)) {
-        const calc = new CatalogCalculatorComponent(self.pageRoot);
-        calc.render(data);
+    this.loadCatalog();
+  }
+
+  async loadCatalog() {
+    try {
+      const result = await get(resistorUrls.getResistors());
+      if (result.status === 200 && Array.isArray(result.data)) {
+        const calc = new CatalogCalculatorComponent(this.pageRoot);
+        calc.render(result.data);
       } else {
-        self.pageRoot.innerHTML = "<p>Не удалось загрузить каталог</p>";
+        this.pageRoot.innerHTML = "<p>Не удалось загрузить каталог</p>";
       }
-    });
+    } catch (e) {
+      console.error(e);
+      this.pageRoot.innerHTML = "<p>Не удалось загрузить каталог</p>";
+    }
   }
 }

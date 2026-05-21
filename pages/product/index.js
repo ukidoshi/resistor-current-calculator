@@ -2,7 +2,7 @@ import { BackButtonComponent } from "../../components/back-button/index.js";
 import { HomeButtonComponent } from "../../components/home-button/index.js";
 import { MainPage } from "../main/index.js";
 import { EditResistorPage } from "../edit/index.js";
-import { ajax } from "../../modules/ajax.js";
+import { get, del } from "../../modules/fetch.js";
 import { resistorUrls } from "../../modules/resistorUrls.js";
 
 export class ProductPage {
@@ -32,16 +32,19 @@ export class ProductPage {
     mainPage.render();
   }
 
-  clickDelete() {
-    const self = this;
-    ajax.delete(resistorUrls.deleteResistorById(this.id), function (data, status) {
-      if (status === 204 || status === 200) {
-        const mainPage = new MainPage(self.parent);
+  async clickDelete() {
+    try {
+      const result = await del(resistorUrls.deleteResistorById(this.id));
+      if (result.status === 204 || result.status === 200) {
+        const mainPage = new MainPage(this.parent);
         mainPage.render();
       } else {
         alert("Не удалось удалить");
       }
-    });
+    } catch (e) {
+      console.error(e);
+      alert("Не удалось удалить");
+    }
   }
 
   clickEdit() {
@@ -76,15 +79,18 @@ export class ProductPage {
     });
   }
 
-  getData() {
-    const self = this;
-    ajax.get(resistorUrls.getResistorById(this.id), function (data, status) {
-      if (status === 200) {
-        self.renderInfo(data);
+  async getData() {
+    try {
+      const result = await get(resistorUrls.getResistorById(this.id));
+      if (result.status === 200) {
+        this.renderInfo(result.data);
       } else {
-        self.pageRoot.innerHTML = "<p>Резистор не найден</p>";
+        this.pageRoot.innerHTML = "<p>Резистор не найден</p>";
       }
-    });
+    } catch (e) {
+      console.error(e);
+      this.pageRoot.innerHTML = "<p>Резистор не найден</p>";
+    }
   }
 
   render() {

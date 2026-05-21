@@ -1,4 +1,4 @@
-import { ajax } from "../../modules/ajax.js";
+import { get, post, patch } from "../../modules/fetch.js";
 import { resistorUrls } from "../../modules/resistorUrls.js";
 import { HomeButtonComponent } from "../../components/home-button/index.js";
 import { MainPage } from "../main/index.js";
@@ -16,7 +16,7 @@ export class EditResistorPage {
       <div class="container py-4 calc-layout">
         <div class="calc-head mb-4">
           <h1 class="mb-2">${title}</h1>
-          <p class="mb-0">Поля можно менять. Кнопка «Сохранить» будет в лабораторной 6.</p>
+          <p class="mb-0">Заполните поля и нажмите «Сохранить».</p>
         </div>
         <div id="edit-page"></div>
       </div>
@@ -56,16 +56,33 @@ export class EditResistorPage {
           <label class="form-label">Описание услуги</label>
           <textarea id="field-text" class="form-control calc-input mb-3" rows="3">${text}</textarea>
 
+          <button id="save-resistor-btn" type="button" class="btn btn-warning me-2">Сохранить</button>
           <button id="back-from-edit" type="button" class="btn btn-secondary">Назад</button>
         </div>
       </div>
     `;
   }
 
+  getFormData() {
+    return {
+      src: document.getElementById("field-src").value.trim(),
+      model: document.getElementById("field-model").value.trim(),
+      resistance: Number(document.getElementById("field-resistance").value),
+      power: document.getElementById("field-power").value.trim(),
+      tolerance: document.getElementById("field-tolerance").value.trim(),
+      text: document.getElementById("field-text").value.trim()
+    };
+  }
+
   renderForm(data) {
     this.pageRoot.insertAdjacentHTML("beforeend", this.getFormHTML(data));
 
     const self = this;
+
+    document.getElementById("save-resistor-btn").addEventListener("click", function () {
+      self.clickSave();
+    });
+
     document.getElementById("back-from-edit").addEventListener("click", function () {
       if (self.id) {
         const page = new ProductPage(self.parent, self.id);
@@ -77,20 +94,54 @@ export class EditResistorPage {
     });
   }
 
-  loadData() {
+  async clickSave() {
+    const body = this.getFormData();
+
+    try {
+      if (this.id) {
+        const result = await patch(resistorUrls.updateResistorById(this.id), body);
+        if (result.status === 200) {
+          const page = new ProductPage(this.parent, this.id);
+          page.render();
+        } else {
+          alert("Не удалось сохранить");
+        }
+        return;
+      }
+
+      const result = await post(resistorUrls.createResistor(), body);
+      if (result.status === 201 && result.data && result.data.id) {
+        const page = new ProductPage(this.parent, result.data.id);
+        page.render();
+      } else if (result.status === 201) {
+        const mainPage = new MainPage(this.parent);
+        mainPage.render();
+      } else {
+        alert("Не удалось сохранить");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Не удалось сохранить");
+    }
+  }
+
+  async loadData() {
     if (!this.id) {
       this.renderForm(null);
       return;
     }
 
-    const self = this;
-    ajax.get(resistorUrls.getResistorById(this.id), function (data, status) {
-      if (status === 200) {
-        self.renderForm(data);
+    try {
+      const result = await get(resistorUrls.getResistorById(this.id));
+      if (result.status === 200) {
+        this.renderForm(result.data);
       } else {
-        self.pageRoot.innerHTML = "<p>Резистор не найден</p>";
+        this.pageRoot.innerHTML = "<p>Резистор не найден</p>";
       }
-    });
+    } catch (e) {
+      console.error(e);
+      this.pageRoot.innerHTML = "<p>Резистор не найден</p>";
+    }
   }
 
   render() {

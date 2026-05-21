@@ -3,7 +3,7 @@ import { ProductPage } from "../product/index.js";
 import { EditResistorPage } from "../edit/index.js";
 import { CalculatorPage } from "../calculator/index.js";
 import { HomeButtonComponent } from "../../components/home-button/index.js";
-import { ajax } from "../../modules/ajax.js";
+import { get } from "../../modules/fetch.js";
 import { resistorUrls } from "../../modules/resistorUrls.js";
 
 export class MainPage {
@@ -59,7 +59,7 @@ export class MainPage {
     });
   }
 
-  getData() {
+  async getData() {
     const modelInput = document.getElementById("filter-model");
     const model = modelInput ? modelInput.value.trim() : "";
 
@@ -68,14 +68,17 @@ export class MainPage {
       url = url + "?model=" + encodeURIComponent(model);
     }
 
-    const self = this;
-    ajax.get(url, function (data, status) {
-      if (status === 200 && Array.isArray(data)) {
-        self.renderData(data);
+    try {
+      const result = await get(url);
+      if (result.status === 200 && Array.isArray(result.data)) {
+        this.renderData(result.data);
       } else {
-        self.pageRoot.innerHTML = "<p>Ошибка загрузки данных</p>";
+        this.pageRoot.innerHTML = "<p>Ошибка загрузки данных</p>";
       }
-    });
+    } catch (e) {
+      console.error(e);
+      this.pageRoot.innerHTML = "<p>Ошибка загрузки данных</p>";
+    }
   }
 
   render() {
