@@ -41,6 +41,7 @@ export function countModelPrefixes(words, modelStr) {
 
 // Задача 3.5: группировка слов-анаграмм
 function getSortedLetters(word) {
+  // const codes = ["rest", "tres", "tser", "ohm", "mho", "amp", "pam", "map"];
   const letters = word.toLowerCase().split("");
   letters.sort();
   return letters.join("");
