@@ -1,5 +1,10 @@
 import { ResistorCardComponent } from "../../components/resistor-card/index.js";
 import { ProductPage } from "../product/index.js";
+import { resistors } from "../../data/resistors.js";
+import {
+  getAverageResistance,
+  getSumOfSquaresOfResistance
+} from "../../homework.js";
 
 export class MainPage {
   constructor(parent) {
@@ -7,39 +12,14 @@ export class MainPage {
   }
 
   getData() {
-    return [
-      {
-        id: 1,
-        model: "Yageo CFR-25JR-52-220R",
-        resistance: 220,
-        power: "0.25W",
-        tolerance: "5%"
-      },
-      {
-        id: 2,
-        model: "Vishay MRS25 10K",
-        resistance: 10000,
-        power: "0.6W",
-        tolerance: "1%"
-      },
-      {
-        id: 3,
-        model: "KOA Speer MF1/4DCT52R1000F",
-        resistance: 1000,
-        power: "0.25W",
-        tolerance: "1%"
-      },
-      {
-        id: 4,
-        model: "Bourns CR0805-FX-1K0ELF",
-        resistance: 1000,
-        power: "0.125W",
-        tolerance: "1%"
-      }
-    ];
+    return resistors;
   }
 
   getHTML() {
+    const resistors = this.getData();
+    const avg = getAverageResistance(resistors).toFixed(2);
+    const sumSq = getSumOfSquaresOfResistance(resistors);
+
     return `
       <div class="container py-4 calc-layout">
         <div class="calc-head mb-4">
@@ -48,6 +28,10 @@ export class MainPage {
         </div>
         <div class="calc-note mb-4">
           Нажми на модель, дальше откроется простая форма заявки для расчета силы тока.
+        </div>
+        <div class="calc-note mb-4">
+          Среднее сопротивление в каталоге: <b>${avg}</b> Ом.
+          Сумма квадратов сопротивлений: <b>${sumSq}</b>.
         </div>
         <div id="main-page" class="row row-cols-1 row-cols-md-2 g-3"></div>
       </div>

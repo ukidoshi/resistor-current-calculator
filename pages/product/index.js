@@ -1,6 +1,9 @@
 import { BackButtonComponent } from "../../components/back-button/index.js";
 import { RequestCardComponent } from "../../components/request-card/index.js";
+import { HomeworkCardComponent } from "../../components/homework-card/index.js";
+import { ThreeViewerComponent } from "../../components/three-viewer/index.js";
 import { MainPage } from "../main/index.js";
+import { resistors } from "../../data/resistors.js";
 
 export class ProductPage {
   constructor(parent, id) {
@@ -9,34 +12,7 @@ export class ProductPage {
   }
 
   getData() {
-    const list = [
-      {
-        id: 1,
-        model: "Yageo CFR-25JR-52-220R",
-        connection: "последовательно",
-        requestResistors: [220, 330, 470]
-      },
-      {
-        id: 2,
-        model: "Vishay MRS25 10K",
-        connection: "параллельно",
-        requestResistors: [10000, 10000, 4700]
-      },
-      {
-        id: 3,
-        model: "KOA Speer MF1/4DCT52R1000F",
-        connection: "последовательно",
-        requestResistors: [1000, 2200, 3300]
-      },
-      {
-        id: 4,
-        model: "Bourns CR0805-FX-1K0ELF",
-        connection: "параллельно",
-        requestResistors: [1000, 1000, 1000]
-      }
-    ];
-
-    return list.find((item) => item.id === this.id);
+    return resistors.find((item) => item.id === this.id);
   }
 
   getHTML() {
@@ -68,7 +44,14 @@ export class ProductPage {
     backButton.render(this.clickBack.bind(this));
 
     const data = this.getData();
+
+    const threeViewer = new ThreeViewerComponent(this.pageRoot);
+    threeViewer.render(data.model3d);
+
     const requestCard = new RequestCardComponent(this.pageRoot);
     requestCard.render(data);
+
+    const homeworkCard = new HomeworkCardComponent(this.pageRoot);
+    homeworkCard.render(data);
   }
 }
